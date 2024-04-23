@@ -26,18 +26,14 @@ RSpec.describe Movie, type: :model do
   end
 
   describe 'search' do
-    it 'returns an error if missing options' do
-      expect(Movie.search(random: {})).to eq({ status: :unprocessable_entity, error: "Invalid params" })
-    end
-
-    it 'returns service unavailable if all APIs are down' do
+    it 'returns nil if there are errors from all APIs' do
       movie_db_api = double("MovieDbApi")
       allow(movie_db_api).to receive(:search).and_return(
         { status: 401, error: 'Unauthorized'}
       )
       allow(MovieDbApi).to receive(:new).and_return(movie_db_api)
 
-      expect(Movie.search(query: "batman")).to eq({ status: :service_unavailable, error: "Service Unavailable" })
+      expect(Movie.search(query: "batman")).to be_nil
     end
 
     it 'returns movies if search is successful' do
@@ -53,7 +49,7 @@ RSpec.describe Movie, type: :model do
       )
       allow(MovieDbApi).to receive(:new).and_return(movie_db_api)
 
-      expect(Movie.search(query: "jack")).to eq({ status: :ok, data: [movie] })
+      expect(Movie.search(query: "jack")).to eq([movie])
     end
   end
 end
